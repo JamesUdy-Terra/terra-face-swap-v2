@@ -1,5 +1,5 @@
 ---
-title: Test
+title: NSFW Face Swap
 emoji: 📈
 colorFrom: gray
 colorTo: pink
