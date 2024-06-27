@@ -13,7 +13,7 @@ import os
 from PIL import Image
 
 
-def swap_face(source_file, target_file,doFaceEnhancer):
+def swap_face(source_file, target_file, doFaceEnhancer):
 
     source_path = "input.jpg"
     target_path = "target.jpg"
@@ -32,8 +32,8 @@ def swap_face(source_file, target_file,doFaceEnhancer):
     roop.globals.output_path = normalize_output_path(
         roop.globals.source_path, roop.globals.target_path, output_path
     )
-    if doFaceEnhancer == True:
-        roop.globals.frame_processors = ["face_swapper","face_enhancer"]
+    if doFaceEnhancer:
+        roop.globals.frame_processors = ["face_swapper", "face_enhancer"]
     else:
         roop.globals.frame_processors = ["face_swapper"]
     roop.globals.headless = True
@@ -64,7 +64,20 @@ def swap_face(source_file, target_file,doFaceEnhancer):
     return output_path
 
 
-app = gr.Interface(
-    fn=swap_face, inputs=[gr.Image(), gr.Image(),gr.Checkbox(label="face_enhancer?", info="do face enhancer?")], outputs="image"
-)
+html_section_1 = "<div><h1>Welcome to the Face Swap App</h1></div>"
+html_section_2 = "<div><p>Upload your source and target images to swap faces. Optionally, use the face enhancer feature.</p></div>"
+html_section_3 = "<div><p>After processing, the swapped image will be displayed below.</p></div>"
+
+app = gr.Blocks()
+
+with app:
+    gr.HTML(html_section_1)
+    gr.HTML(html_section_2)
+    gr.HTML(html_section_3)
+    gr.Interface(
+        fn=swap_face,
+        inputs=[gr.Image(), gr.Image(), gr.Checkbox(label="face_enhancer?", info="do face enhancer?")],
+        outputs="image"
+    )
+
 app.launch()
