@@ -72,7 +72,6 @@ app = gr.Blocks()
 with app:
     gr.HTML(html_section_1)
     gr.HTML(html_section_2)
-    gr.HTML(html_section_3)
     gr.Interface(
         fn=swap_face,
         inputs=[gr.Image(), gr.Image(), gr.Checkbox(label="face_enhancer?", info="do face enhancer?")],
