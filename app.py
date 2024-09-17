@@ -65,8 +65,7 @@ def swap_face(source_file, target_file, doFaceEnhancer):
 
 
 html_section_1 = "<div><h1>Welcome to the Face Swap App</h1></div>"
-html_section_2 = "<div><p>Upload your source and target images to swap faces. Optionally, use the face enhancer feature for HD Results.</p>
-<p><br /><strong>For fast and bulk Swap:</strong>&nbsp;<a href="https://swap.picfy.net/" target="_blank" rel="noopener">https://swap.picfy.net/</a><br /> <strong>Support me:</strong> <a href="https://wee.gumroad.com/coffee" target="_blank" rel="noopener">https://wee.gumroad.com/coffee</a></p></div>"
+html_section_2 = "<div><p>Upload your source and target images to swap faces. Optionally, use the face enhancer feature for HD Results.</p><p><br /><strong>For fast and bulk Swap:</strong>&nbsp;<a href="https://swap.picfy.net/" target="_blank" rel="noopener">https://swap.picfy.net/</a><br /> <strong>Support me:</strong> <a href="https://wee.gumroad.com/coffee" target="_blank" rel="noopener">https://wee.gumroad.com/coffee</a></p></div>"
 
 app = gr.Blocks()
 
