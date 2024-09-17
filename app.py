@@ -65,7 +65,7 @@ def swap_face(source_file, target_file, doFaceEnhancer):
 
 
 html_section_1 = "<div><h1>Welcome to the Face Swap App</h1></div>"
-html_section_2 = "<div><p>Upload your source and target images to swap faces. Optionally, use the face enhancer feature.</p></div>"
+html_section_2 = "<div><p>Upload your source and target images to swap faces. Optionally, use the face enhancer feature.<br>Fo fast and bulk processing contact me WhatsApp: +92-332-4399819 Email: weepakistan@gmail.com</p></div>"
 
 app = gr.Blocks()
 
