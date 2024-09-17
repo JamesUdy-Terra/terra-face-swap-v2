@@ -66,17 +66,6 @@ def swap_face(source_file, target_file, doFaceEnhancer):
 
 html_section_1 = "<div><h1>Welcome to the Face Swap App</h1></div>"
 html_section_2 = "<div><p>Upload your source and target images to swap faces. Optionally, use the face enhancer feature.</p></div>"
-html_section_3 = """<div>
-    <a href="https://ziverr.xyz/monica" target="_blank" style="display: inline-block;">
-        <img decoding="async" alt="banner" src="https://ziverr.xyz/wp-content/uploads/2024/06/PASSIVE-3.gif">
-    </a>
-    <a href="https://go.fiverr.com/visit/?bta=36184&brand=fiverrcpa&landingPage=https%253A%252F%252Fwww.fiverr.com%252Fcategories%252Fprogramming-tech%252Fai-coding%252Fai-applications%253Fsource%253Dcategory_tree" target="_blank" style="display: inline-block;">
-        <img fetchpriority="high" decoding="async" width="468" height="120" src="https://ziverr.xyz/wp-content/uploads/2024/06/PASSIVE-1.gif" class="attachment-large size-large wp-image-1266" alt="">
-    </a>
-    <a href="https://beta.publishers.adsterra.com/referral/UNXJYTziBP" target="_blank" style="display: inline-block;">
-        <img decoding="async" alt="banner" src="https://landings-cdn.adsterratech.com/referralBanners/gif/468x120_adsterra_reff.gif">
-    </a>
-</div>"""
 
 app = gr.Blocks()
 
