@@ -65,7 +65,7 @@ def swap_face(source_file, target_file, doFaceEnhancer):
 
 
 html_section_1 = "<div><h1>Welcome to the Face Swap App</h1></div>"
-html_section_2 = '<div><p>Upload your source and target images to swap faces. Optionally, use the face enhancer feature for HD Results.</p><h2><br /><strong>For fast and bulk Swap:</strong>&nbsp;<a href="https://picfy.xyz/" target="_blank" rel="noopener">https://picfy.xyz/</a><br /> <strong>Support me USDT (TRC-20): TAe7hsSVWtMEYz3G5V1UiUdYPQVqm28bKx</h2></div><br>Start Face Swap SaaS on WordPress:</strong>&nbsp;<a href="https://www.codester.com/aheed/" target="_blank" rel="noopener">https://www.codester.com/aheed/</a>'
+html_section_2 = '<div><p>Upload your source and target images to swap faces. Optionally, use the face enhancer feature for HD Results.</p><h2><br /><strong>For fast bulk swap and API visit:</strong>&nbsp;<a href="https://picfy.xyz/" target="_blank" rel="noopener">https://picfy.xyz/</a><br /> <strong>Support me USDT (TRC-20): TAe7hsSVWtMEYz3G5V1UiUdYPQVqm28bKx</h2></div><br>Start Face Swap SaaS on WordPress:</strong>&nbsp;<a href="https://www.codester.com/aheed/" target="_blank" rel="noopener">https://www.codester.com/aheed/</a>'
 
 app = gr.Blocks()
 
