@@ -70,7 +70,6 @@ html_section_2 = """<div><p>Upload your source and target images to swap faces.
     Optionally, use the face enhancer feature for HD Results.</p><h2><br/>
     <strong>For fast and bulk swap visit:</strong>&nbsp;
     <a href="https://picfy.xyz/" target="_blank" rel="noopener">https://picfy.xyz/</a><br/> 
-    <strong>Support me USDT (TRC-20): TAe7hsSVWtMEYz3G5V1UiUdYPQVqm28bKx</strong></h2></div><br>
     <strong>Start Face Swap SaaS on WordPress:</strong>&nbsp;
     <a href="https://www.codester.com/aheed/" target="_blank" rel="noopener">https://www.codester.com/aheed/</a>"""
     
