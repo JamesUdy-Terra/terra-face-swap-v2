@@ -1,5 +1,5 @@
 ---
-title: NSFW Face Swap
+title: Fast NSFW Face Swap
 emoji: 📈
 colorFrom: gray
 colorTo: pink
