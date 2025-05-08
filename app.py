@@ -68,6 +68,11 @@ html_section_1 = "<div><h1>Welcome to the NSFW Face Swap & API</h1></div>"
 
 html_section_2 = """<div><p>Upload your source and target images to swap faces. 
     Optionally, use the face enhancer feature for HD Results.</p><h2><br/>
+
+    <strong>Support the dev:</strong>&nbsp;
+    <a href="https://picfy.xyz/support-me" target="_blank" rel="noopener">https://picfy.xyz/support-me</a><br/> 
+
+    
     <strong>For fast and bulk swap visit:</strong>&nbsp;
     <a href="https://picfy.xyz/" target="_blank" rel="noopener">https://picfy.xyz/</a><br/> 
     <strong>Start Face Swap SaaS on WordPress:</strong>&nbsp;
