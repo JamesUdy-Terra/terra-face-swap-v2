@@ -90,4 +90,4 @@ with app:
         outputs="image"
     )
 
-app.launch()
+app.launch(share=True)
