@@ -87,4 +87,4 @@ with app:
         outputs="image"
     )
 
-app.launch(share=True)
+app.launch()
