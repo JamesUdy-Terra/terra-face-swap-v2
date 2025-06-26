@@ -1,6 +1,5 @@
-import numpy as np
-import gradio as gr
-import roop.globals
+from fastapi import FastAPI, File, UploadFile, HTTPException
+from fastapi.responses import Response
 from roop.core import (
     start,
     decode_execution_providers,
@@ -9,33 +8,48 @@ from roop.core import (
 )
 from roop.processors.frame.core import get_frame_processors_modules
 from roop.utilities import normalize_output_path
-import os
+import roop.globals
 from PIL import Image
+import tempfile
+import os
+import io
+import random
 
+app = FastAPI(title="Face Swap API")
 
-def swap_face(source_file, target_file, doFaceEnhancer):
+DEST_DIR = "dest"
 
-    source_path = "input.jpg"
-    target_path = "target.jpg"
+def save_upload_to_temp(upload_file: UploadFile) -> str:
+    image_bytes = upload_file.file.read()
+    image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
 
-    source_image = Image.fromarray(source_file)
-    source_image.save(source_path)
-    target_image = Image.fromarray(target_file)
-    target_image.save(target_path)
+    temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".jpg")
+    image.save(temp_file.name)
+    return temp_file.name
 
-    print("source_path: ", source_path)
-    print("target_path: ", target_path)
+def choose_random_target_temp() -> str:
+    if not os.path.exists(DEST_DIR):
+        raise Exception(f"Destination folder '{DEST_DIR}' not found")
+    
+    files = [f for f in os.listdir(DEST_DIR) if f.lower().endswith((".jpg", ".jpeg", ".png"))]
+    if not files:
+        raise Exception(f"No destination images found in '{DEST_DIR}'")
 
+    chosen = random.choice(files)
+    img = Image.open(os.path.join(DEST_DIR, chosen)).convert("RGB")
+
+    temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".jpg")
+    img.save(temp_file.name)
+    return temp_file.name
+
+def run_face_swap(source_path: str, target_path: str) -> str:
     roop.globals.source_path = source_path
     roop.globals.target_path = target_path
-    output_path = "output.jpg"
-    roop.globals.output_path = normalize_output_path(
-        roop.globals.source_path, roop.globals.target_path, output_path
-    )
-    if doFaceEnhancer:
-        roop.globals.frame_processors = ["face_swapper", "face_enhancer"]
-    else:
-        roop.globals.frame_processors = ["face_swapper"]
+    output_file = tempfile.NamedTemporaryFile(delete=False, suffix=".jpg")
+    output_path = output_file.name
+    roop.globals.output_path = normalize_output_path(source_path, target_path, output_path)
+
+    roop.globals.frame_processors = ["face_swapper", "face_enhancer"]
     roop.globals.headless = True
     roop.globals.keep_fps = True
     roop.globals.keep_audio = True
@@ -47,44 +61,35 @@ def swap_face(source_file, target_file, doFaceEnhancer):
     roop.globals.execution_providers = decode_execution_providers(["cuda"])
     roop.globals.execution_threads = suggest_execution_threads()
 
-    print(
-        "start process",
-        roop.globals.source_path,
-        roop.globals.target_path,
-        roop.globals.output_path,
-    )
-
-    for frame_processor in get_frame_processors_modules(
-        roop.globals.frame_processors
-    ):
+    for frame_processor in get_frame_processors_modules(roop.globals.frame_processors):
         if not frame_processor.pre_check():
-            return
+            raise Exception("Pre-check failed for processor")
 
     start()
     return output_path
 
+@app.post("/swap-face")
+async def swap_face_api(source_image: UploadFile = File(...)):
+    source_temp = target_temp = output_temp = None
+    try:
+        source_temp = save_upload_to_temp(source_image)
+        target_temp = choose_random_target_temp()
+        output_temp = run_face_swap(source_temp, target_temp)
 
-html_section_1 = "<div><h1>Welcome to the NSFW Face Swap & API</h1></div>"
+        with open(output_temp, "rb") as f:
+            image_bytes = f.read()
 
-html_section_2 = """<div><p>Upload your source and target images to swap faces. 
-    Optionally, use the face enhancer feature for HD Results.</p><h2><br/>
-    <strong>Support the dev:</strong>&nbsp;
-    <a href="https://picfy.xyz/support-me" target="_blank" rel="noopener">https://picfy.xyz/support-me</a><br/> 
-    <strong>For fast and bulk swap visit:</strong>&nbsp;
-    <a href="https://picfy.xyz/" target="_blank" rel="noopener">https://picfy.xyz/</a><br/> 
-    <strong>Start Face Swap SaaS on WordPress:</strong>&nbsp;
-    <a href="https://www.codester.com/aheed/" target="_blank" rel="noopener">https://www.codester.com/aheed/</a>"""
-    
+        return Response(content=image_bytes, media_type="image/jpeg")
 
-app = gr.Blocks()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
-with app:
-    gr.HTML(html_section_1)
-    gr.HTML(html_section_2)
-    gr.Interface(
-        fn=swap_face,
-        inputs=[gr.Image(), gr.Image(), gr.Checkbox(label="face_enhancer?", info="do face enhancer?")],
-        outputs="image"
-    )
+    finally:
+        # Clean up all temp files
+        for f in [source_temp, target_temp, output_temp]:
+            if f and os.path.exists(f):
+                os.remove(f)
 
-app.launch()
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=7860)
