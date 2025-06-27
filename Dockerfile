@@ -27,7 +27,7 @@ EXPOSE 8080
 
 # Start the app (choose based on your framework)
 # 🔄 If FastAPI:
-# CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8080"]
+CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8080"]
 
 # 🔄 If Flask or plain Python script:
-CMD ["python", "app.py"]
+#CMD ["python", "app.py"]
