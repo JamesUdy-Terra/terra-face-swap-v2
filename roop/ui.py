@@ -1,5 +1,8 @@
 import os
 import webbrowser
+if os.environ.get("ROOP_HEADLESS") == "1":
+    raise ImportError("GUI not supported in headless mode")
+
 import customtkinter as ctk
 from typing import Callable, Tuple
 import cv2
