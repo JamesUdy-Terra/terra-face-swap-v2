@@ -27,20 +27,24 @@ def save_upload_to_temp(upload_file: UploadFile) -> str:
     image.save(temp_file.name)
     return temp_file.name
 
-def choose_random_target_temp() -> str:
+def choose_random_target_temp(variant: str) -> str:
     if not os.path.exists(DEST_DIR):
         raise Exception(f"Destination folder '{DEST_DIR}' not found")
-    
+
     files = [f for f in os.listdir(DEST_DIR) if f.lower().endswith((".jpg", ".jpeg", ".png"))]
     if not files:
         raise Exception(f"No destination images found in '{DEST_DIR}'")
 
-    chosen = random.choice(files)
-    img = Image.open(os.path.join(DEST_DIR, chosen)).convert("RGB")
+    if variant.lower() != "surprise me":
+        filtered = [
+            f for f in files
+            if variant.lower() in f.lower()
+        ]
+        if not filtered:
+            raise Exception(f"No images found in '{DEST_DIR}' matching variant '{variant}'")
+        files = filtered
 
-    temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".jpg")
-    img.save(temp_file.name)
-    return temp_file.name
+    chosen = random.choice(files)
 
 def run_face_swap(source_path: str, target_path: str) -> str:
     roop.globals.source_path = source_path
@@ -69,11 +73,11 @@ def run_face_swap(source_path: str, target_path: str) -> str:
     return output_path
 
 @app.post("/swap-face")
-async def swap_face_api(source_image: UploadFile = File(...)):
+async def swap_face_api(source_image: UploadFile = File(...), variant: str = Form("Surprise Me")):
     source_temp = target_temp = output_temp = None
     try:
         source_temp = save_upload_to_temp(source_image)
-        target_temp = choose_random_target_temp()
+        target_temp = choose_random_target_temp(variant)
         output_temp = run_face_swap(source_temp, target_temp)
 
         with open(output_temp, "rb") as f:
