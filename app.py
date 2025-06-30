@@ -31,20 +31,38 @@ def choose_random_target_temp(variant: str) -> str:
     if not os.path.exists(DEST_DIR):
         raise Exception(f"Destination folder '{DEST_DIR}' not found")
 
-    files = [f for f in os.listdir(DEST_DIR) if f.lower().endswith((".jpg", ".jpeg", ".png"))]
+    # Get all supported image files
+    files = [
+        f for f in os.listdir(DEST_DIR)
+        if f.lower().endswith((".jpg", ".jpeg", ".png"))
+    ]
     if not files:
         raise Exception(f"No destination images found in '{DEST_DIR}'")
 
+    filtered_files = files
+
+    # Filter if not "Surprise Me"
     if variant.lower() != "surprise me":
-        filtered = [
+        filtered_files = [
             f for f in files
             if variant.lower() in f.lower()
         ]
-        if not filtered:
-            raise Exception(f"No images found in '{DEST_DIR}' matching variant '{variant}'")
-        files = filtered
 
-    chosen = random.choice(files)
+        # Fallback to random from all files if nothing matched
+        if not filtered_files:
+            print(f"[WARN] No matches for variant '{variant}'. Falling back to random.")
+            filtered_files = files
+
+    # Choose a random image from filtered (or fallback) list
+    chosen_file = random.choice(filtered_files)
+    chosen_path = os.path.join(DEST_DIR, chosen_file)
+
+    # Open and normalize it (RGB + .jpg) into a temp file
+    img = Image.open(chosen_path).convert("RGB")
+    temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".jpg")
+    img.save(temp_file.name)
+
+    return temp_file.name
 
 def run_face_swap(source_path: str, target_path: str) -> str:
     roop.globals.source_path = source_path
