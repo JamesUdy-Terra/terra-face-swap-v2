@@ -1,5 +1,6 @@
 from fastapi import FastAPI, File, UploadFile, HTTPException, Form
 from fastapi.responses import Response
+from typing import Optional
 from roop.core import (
     start,
     decode_execution_providers,
@@ -91,11 +92,18 @@ def run_face_swap(source_path: str, target_path: str) -> str:
     return output_path
 
 @app.post("/swap-face")
-async def swap_face_api(source_image: UploadFile = File(...), variant: str = Form("Surprise Me")):
+async def swap_face_api(
+    source_image: UploadFile = File(...),
+    variant: str = Form("Surprise Me"),
+    optional_target_image: Optional[UploadFile] = File(None)
+):
     source_temp = target_temp = output_temp = None
     try:
         source_temp = save_upload_to_temp(source_image)
-        target_temp = choose_random_target_temp(variant)
+        if optional_target_image:
+            target_temp = save_upload_to_temp(optional_target_image)
+        else:
+            target_temp = choose_random_target_temp(variant)
         output_temp = run_face_swap(source_temp, target_temp)
 
         with open(output_temp, "rb") as f:
