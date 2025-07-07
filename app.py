@@ -64,7 +64,7 @@ def choose_random_target_temp(variant: str) -> str:
     temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".jpg")
     img.save(temp_file.name)
 
-    return temp_file.name
+    return temp_file.name, chosen_file
 
 def run_face_swap(source_path: str, target_path: str) -> str:
     roop.globals.source_path = source_path
@@ -103,6 +103,7 @@ async def swap_face_api(
         source_temp = save_upload_to_temp(source_image)
         if optional_target_image:
             target_temp = save_upload_to_temp(optional_target_image)
+            destination_name = optional_target_image.filename
         else:
             target_temp = choose_random_target_temp(variant)
         output_temp = run_face_swap(source_temp, target_temp)
@@ -112,8 +113,7 @@ async def swap_face_api(
             image_base64 = base64.b64encode(image_bytes).decode("utf-8")
         
         # Generate clean image ID from filename
-        filename = os.path.basename(output_temp)
-        name_without_ext = os.path.splitext(filename)[0]
+        name_without_ext = os.path.splitext(destination_name)[0]
         image_id = name_without_ext.replace(" ", "_")
 
         return JSONResponse(status_code=200, content={
