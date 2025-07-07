@@ -105,7 +105,7 @@ async def swap_face_api(
             target_temp = save_upload_to_temp(optional_target_image)
             destination_name = optional_target_image.filename
         else:
-            target_temp = choose_random_target_temp(variant)
+            target_temp, destination_name = choose_random_target_temp(variant)
         output_temp = run_face_swap(source_temp, target_temp)
         if output_temp is None:
             raise Exception("No face detected in source image.")
