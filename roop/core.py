@@ -142,7 +142,7 @@ def update_status(message: str, scope: str = 'ROOP.CORE') -> None:
 def start() -> None:
     for frame_processor in get_frame_processors_modules(roop.globals.frame_processors):
         if not frame_processor.pre_start():
-            return
+            return "No-Face"
     # process image to image
     if has_image_extension(roop.globals.target_path):
         if predict_image(roop.globals.target_path):

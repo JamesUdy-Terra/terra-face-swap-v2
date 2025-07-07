@@ -1,4 +1,4 @@
-from fastapi import FastAPI, File, UploadFile, HTTPException, Form
+from fastapi import FastAPI, File, UploadFile, HTTPException, Form, Request
 from fastapi.responses import JSONResponse
 from typing import Optional
 from roop.core import (
@@ -89,8 +89,8 @@ def run_face_swap(source_path: str, target_path: str) -> str:
         if not frame_processor.pre_check():
             raise Exception("Pre-check failed for processor")
 
-    start()
-    return output_path
+    val = start()
+    return None if val == "No-Face" else output_path
 
 @app.post("/swap-face")
 async def swap_face_api(
@@ -107,6 +107,8 @@ async def swap_face_api(
         else:
             target_temp = choose_random_target_temp(variant)
         output_temp = run_face_swap(source_temp, target_temp)
+        if output_temp is None:
+            raise Exception("No face detected in source image.")
 
         with open(output_temp, "rb") as f:
             image_bytes = f.read()
@@ -133,6 +135,13 @@ async def swap_face_api(
         for f in [source_temp, target_temp, output_temp]:
             if f and os.path.exists(f):
                 os.remove(f)
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    return JSONResponse(
+        status_code=500,
+        content={"status": "error", "message": str(exc)},
+    )
 
 if __name__ == "__main__":
     import uvicorn
