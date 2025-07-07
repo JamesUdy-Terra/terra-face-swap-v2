@@ -1,5 +1,5 @@
 from fastapi import FastAPI, File, UploadFile, HTTPException, Form
-from fastapi.responses import Response
+from fastapi.responses import JSONResponse
 from typing import Optional
 from roop.core import (
     start,
@@ -15,6 +15,7 @@ import tempfile
 import os
 import io
 import random
+import base64
 
 app = FastAPI(title="Face Swap API")
 
@@ -108,11 +109,24 @@ async def swap_face_api(
 
         with open(output_temp, "rb") as f:
             image_bytes = f.read()
+            image_base64 = base64.b64encode(image_bytes).decode("utf-8")
+        
+        # Generate clean image ID from filename
+        filename = os.path.basename(output_temp)
+        name_without_ext = os.path.splitext(filename)[0]
+        image_id = name_without_ext.replace(" ", "_")
 
-        return Response(content=image_bytes, media_type="image/jpeg")
+        return JSONResponse(status_code=200, content={
+            "status": "success",
+            "image_id": image_id,
+            "image_base64": image_base64
+        })
 
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        return JSONResponse(status_code=500, content={
+            "status": "error",
+            "message": str(e)
+        })
 
     finally:
         # Clean up all temp files
