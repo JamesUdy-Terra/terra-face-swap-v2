@@ -9,3 +9,6 @@ flagged/
 .idea
 .vscode
 models/
+venv/
+*.h5
+.DS_Store

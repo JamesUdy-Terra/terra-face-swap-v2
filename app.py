@@ -1,3 +1,4 @@
+from urllib import request
 from fastapi import FastAPI, File, UploadFile, HTTPException, Form, Request
 from fastapi.responses import JSONResponse
 from typing import Optional
@@ -16,10 +17,22 @@ import os
 import io
 import random
 import base64
+from gender_recognition.model_utils import predict_gender
+
 
 app = FastAPI(title="Face Swap API")
 
 DEST_DIR = "dest"
+# Point to your service account JSON
+# os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/Users/srivathsadhanraj/.gcp/face-swap-463306-863e4ddbf989.json"
+
+# Initialize storage client
+# try:
+#     storage_client = storage.Client()
+#     bucket = storage_client.bucket('face-swap-463306_cloudbuild')
+# except Exception as e:
+#     print(f"[ERROR] Failed to initialize GCS client: {e}")
+#     bucket = None
 
 def save_upload_to_temp(upload_file: UploadFile) -> str:
     image_bytes = upload_file.file.read()
@@ -29,42 +42,62 @@ def save_upload_to_temp(upload_file: UploadFile) -> str:
     image.save(temp_file.name)
     return temp_file.name
 
-def choose_random_target_temp(variant: str) -> str:
-    if not os.path.exists(DEST_DIR):
-        raise Exception(f"Destination folder '{DEST_DIR}' not found")
+# def fetch_random_from_gcs(gender: str, variant: str):
+#     folder = f"{gender.lower()}/"
+#     blobs = list(bucket.list_blobs(prefix=folder))
+#     blobs = [b for b in blobs if b.name.lower().endswith((".jpg", ".jpeg", ".png"))]
 
-    # Get all supported image files
-    files = [
-        f for f in os.listdir(DEST_DIR)
-        if f.lower().endswith((".jpg", ".jpeg", ".png"))
-    ]
+#     if not blobs:
+#         raise Exception(f"No images found in GCS folder '{folder}'")
+
+#     # First try to filter by variant (if not 'surprise me')
+#     filtered_blobs = blobs
+#     if variant.lower() != "surprise me":
+#         filtered_blobs = [b for b in blobs if variant.lower() in b.name.lower()]
+#         if not filtered_blobs:
+#             print(f"[WARN] No matches for variant '{variant}' in GCS. Falling back to random.")
+#             filtered_blobs = blobs
+
+#     chosen_blob = random.choice(filtered_blobs)
+
+#     # Download as bytes
+#     img_bytes = chosen_blob.download_as_bytes()
+#     img = Image.open(io.BytesIO(img_bytes)).convert("RGB")
+
+#     # Save to temp file
+#     temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".jpg")
+#     img.save(temp_file.name)
+#     return temp_file.name, os.path.basename(chosen_blob.name)
+
+
+def choose_random_target_temp(variant: str, gender: str, source_type: str) -> str:
+    if source_type == "remote":
+        # return fetch_random_from_gcs(gender, variant)
+        print("requested remote")
+
+    gender_folder = os.path.join(DEST_DIR, gender.lower())
+    if not os.path.exists(gender_folder):
+        raise Exception(f"Destination gender folder '{gender_folder}' not found")
+
+    files = [f for f in os.listdir(gender_folder) if f.lower().endswith((".jpg", ".jpeg", ".png"))]
     if not files:
-        raise Exception(f"No destination images found in '{DEST_DIR}'")
+        raise Exception(f"No images found in '{gender_folder}'")
 
     filtered_files = files
-
-    # Filter if not "Surprise Me"
     if variant.lower() != "surprise me":
-        filtered_files = [
-            f for f in files
-            if variant.lower() in f.lower()
-        ]
-
-        # Fallback to random from all files if nothing matched
+        filtered_files = [f for f in files if variant.lower() in f.lower()]
         if not filtered_files:
-            print(f"[WARN] No matches for variant '{variant}'. Falling back to random.")
             filtered_files = files
 
-    # Choose a random image from filtered (or fallback) list
     chosen_file = random.choice(filtered_files)
-    chosen_path = os.path.join(DEST_DIR, chosen_file)
-
-    # Open and normalize it (RGB + .jpg) into a temp file
+    chosen_path = os.path.join(gender_folder, chosen_file)
     img = Image.open(chosen_path).convert("RGB")
     temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".jpg")
     img.save(temp_file.name)
 
     return temp_file.name, chosen_file
+
+
 
 def run_face_swap(source_path: str, target_path: str) -> str:
     roop.globals.source_path = source_path
@@ -96,16 +129,27 @@ def run_face_swap(source_path: str, target_path: str) -> str:
 async def swap_face_api(
     source_image: UploadFile = File(...),
     variant: str = Form("Surprise Me"),
+    source_type: str = Form("local"),
     optional_target_image: Optional[UploadFile] = File(None)
 ):
     source_temp = target_temp = output_temp = None
+    # fetch_random_from_gcs("male")
+    # return {}
     try:
         source_temp = save_upload_to_temp(source_image)
         if optional_target_image:
             target_temp = save_upload_to_temp(optional_target_image)
             destination_name = optional_target_image.filename
         else:
-            target_temp, destination_name = choose_random_target_temp(variant)
+            # Detect Gender from Source Image
+            from PIL import Image as PILImage
+            gender_result = predict_gender(PILImage.open(source_temp))
+            gender = gender_result['gender'].lower()  # 'male' or 'female'
+
+            print(f"[INFO] 1Detected Gender: {gender_result['gender']} ({gender_result['probability']*100:.2f}%)")
+
+            target_temp, destination_name = choose_random_target_temp(variant, gender, source_type)
+
         output_temp = run_face_swap(source_temp, target_temp)
         if output_temp is None:
             raise Exception("No face detected in source image.")
